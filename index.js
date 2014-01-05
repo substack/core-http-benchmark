@@ -6,7 +6,7 @@ var EventEmitter = require('events').EventEmitter;
 
 module.exports = benchmark;
 
-function benchmark (uri, n, cb) {
+function benchmark (uri, t, cb) {
     var u = url.parse(uri);
     var host = u.hostname === 'localhost' ? '127.0.0.1' : u.host;
     uri = u.protocol + '//' + host + (u.port ? ':' + u.port : '') + u.path;
@@ -18,7 +18,7 @@ function benchmark (uri, n, cb) {
     
     var results = {};
     
-    var ab = spawn('ab', [ '-n', n, '-c', 100, '-t', 10, uri ]);
+    var ab = spawn('ab', [ '-c', 100, '-t', t, uri ]);
     ab.stdout.pipe(split()).pipe(through(function (line) {
         var m;
         if (m = /^(\S[^:]*):\s{2,}(.+)/.exec(line)) {
@@ -27,10 +27,17 @@ function benchmark (uri, n, cb) {
             results[key] = value;
         }
     }));
+    
+    var t0 = Date.now();
+    var iv = setInterval(function () {
+        var percent = Math.floor(100 * (Date.now() - t0) / 1000 / t);
+        bench.emit('percent', percent);
+    }, 100);
+    
     ab.stderr.pipe(split()).pipe(through(function (line) {
         var m;
         if (m = /^Completed (\d+)/.exec(line)) {
-            bench.emit('percent', Math.floor(parseInt(m[1]) / n * 100));
+            bench.emit('completed', parseInt(m[1]));
         }
         else if (m = /^Finished (\d+)/.exec(line)) {
             bench.emit('finished', parseInt(m[1]));
@@ -41,6 +48,8 @@ function benchmark (uri, n, cb) {
     }));
     
     ab.on('exit', function (code) {
+        clearInterval(iv);
+        
         if (code === 0) {
             bench.emit('results', results);
         }

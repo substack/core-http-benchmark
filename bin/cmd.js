@@ -40,7 +40,7 @@ var benchmarks = {};
     
     ps.stdout.on('data', function (buf) {
         var uri = buf.toString().trim();
-        var b = benchmark(uri, argv.n || 20000);
+        var b = benchmark(uri, argv.t || 10);
         
         process.stdout.write(sprintf('\r%-12s %3d %%', name, 0));
         b.on('percent', function (percent) {

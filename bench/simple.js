@@ -114,9 +114,12 @@ server.listen(0, function () {
   var href = 'http://localhost:' + server.address().port;
   var types = [ 'bytes', 'buffer', 'unicode' ];
   var bytes = [ 4, 1024, 102400 ];
+  var chunks = [ 0, 1, 4 ];
   types.forEach(function (t) {
     bytes.forEach(function (b) {
-      console.log([ href, t, b ].join('/'));
+      chunks.forEach(function (c) {
+        console.log([ href, t, b, c ].join('/'));
+      });
     });
   });
   console.log(href + '/fixed');

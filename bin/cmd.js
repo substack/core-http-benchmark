@@ -16,9 +16,9 @@ if (argv.h || argv.help) return usage(0);
 
 var files = argv._;
 if (files.length === 0) {
-    files = fs.readdirSync(__dirname + '/bench')
+    files = fs.readdirSync(path.join(__dirname, '..', 'bench'))
         .filter(function (x) { return path.extname(x) === '.js' })
-        .map(function (x) { return path.join(__dirname, 'bench', x) })
+        .map(function (x) { return path.join(__dirname, '..', 'bench', x) })
     ;
 }
 

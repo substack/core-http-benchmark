@@ -12,8 +12,10 @@ usage: core-http-benchmark OPTIONS [FILES]
 
   Run each of the benchmark FILES.
 
-    -t  time to take for each test in seconds, default: 10
-    -r  http module to use, default: http
-    -b  test a single path from a benchmark file
+          -t  time to take for each test in seconds, default: 10
+          -r  http module to use, default: http
+          -b  test a single path from a benchmark file
+    
+  --no-fancy  turn off fancy ansi output (default if not a tty)
 
 ```

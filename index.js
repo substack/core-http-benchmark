@@ -31,7 +31,7 @@ function benchmark (uri, t, cb) {
     var t0 = Date.now();
     var iv = setInterval(function () {
         var percent = Math.floor(100 * (Date.now() - t0) / 1000 / t);
-        bench.emit('percent', Math.max(100, percent));
+        bench.emit('percent', Math.min(100, percent));
     }, 100);
     
     ab.stderr.pipe(split()).pipe(through(function (line) {

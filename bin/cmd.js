@@ -68,7 +68,7 @@ var benchmarks = {};
 })();
 
 function printSummary () {
-    console.log(benchmarks);
+    // todo
 }
 
 function usage (code) {

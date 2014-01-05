@@ -5,6 +5,9 @@ var minimist = require('minimist');
 var path = require('path');
 var fs = require('fs');
 var sprintf = require('sprintf');
+var split = require('split');
+var through = require('through');
+var url = require('url');
 
 var benchmark = require('../');
 
@@ -38,13 +41,28 @@ var benchmarks = {};
     var ps = spawn(process.execPath, [ file, http ]);
     ps.stderr.pipe(process.stderr);
     
-    ps.stdout.on('data', function (buf) {
-        var uri = buf.toString().trim();
+    var links = [], first = true;
+    ps.stdout.pipe(split()).pipe(through(function (line) {
+        links.push(line.toString().trim());
+        if (first) nextLink();
+        first = false;
+    }));
+    
+    function nextLink () {
+        if (links.length === 0) {
+            ps.kill();
+            return next();
+        }
+        
+        var uri = links.shift();
+        var u = url.parse(uri);
         var b = benchmark(uri, argv.t || 10);
         
-        process.stdout.write(sprintf('\r%-12s %3d %%', name, 0));
+        process.stdout.write(sprintf('\r%-24s %3d %%', name + u.path, 0));
         b.on('percent', function (percent) {
-            process.stdout.write(sprintf('\r%-12s %3d %%', name, percent));
+            process.stdout.write(sprintf(
+                '\r%-24s %3d %%', name + u.path, percent
+            ));
         });
         
         b.on('error', function (err) { console.error(err) });
@@ -52,7 +70,10 @@ var benchmarks = {};
         
         b.on('results', function (results) {
             var rps = parseFloat(results['requests per second']);
-            process.stdout.write(sprintf('\r%-12s %s\r\n', name, rps));
+            process.stdout.write(sprintf(
+                '\r%-24s %f\x1b[K\r\n',
+                name + u.path, rps
+            ));
             
             benchmarks[name] = {
                 'requests per second': rps,
@@ -61,10 +82,9 @@ var benchmarks = {};
         });
         
         b.on('exit', function () {
-            ps.kill();
-            next();
+            nextLink();
         });
-    });
+    }
 })();
 
 function printSummary () {

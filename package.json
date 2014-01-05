@@ -1,0 +1,30 @@
+{
+  "name": "core-http-benchmark",
+  "version": "0.0.0",
+  "description": "benchmark implementations of the http module from node core",
+  "main": "index.js",
+  "bin": { "core-http-benchmark": "bin/cmd.js" },
+  "dependencies": {
+    "minimist": "~0.0.5",
+    "split": "~0.2.10",
+    "sprintf": "~0.1.3",
+    "through": "~2.3.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/substack/core-http-benchmark.git"
+  },
+  "homepage": "https://github.com/substack/core-http-benchmark",
+  "keywords": [
+    "http",
+    "benchmark",
+    "node",
+    "core"
+  ],
+  "author": {
+    "name": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net"
+  },
+  "license": "MIT"
+}

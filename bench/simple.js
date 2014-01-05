@@ -111,5 +111,13 @@ function makeString(size, c) {
 }
 
 server.listen(0, function () {
-    console.log('http://localhost:' + server.address().port);
+    var href = 'http://localhost:' + server.address().port;
+    console.log(href + '/bytes/50');
+    console.log(href + '/bytes/500');
+    console.log(href + '/buffer/50');
+    console.log(href + '/buffer/500');
+    console.log(href + '/unicode/50');
+    console.log(href + '/unicode/500');
+    console.log(href + '/fixed');
+    console.log(href + '/echo');
 });

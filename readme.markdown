@@ -2,6 +2,9 @@
 
 run the http benchmarks from node core
 
+If you were going to write an alternate implementation of the node core http
+library in userland, this library would be very handy for that.
+
 # usage
 
 ```

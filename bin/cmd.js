@@ -30,6 +30,11 @@ catch (e) {
     require.resolve(http);
 }
 
+if (argv.b && files.length > 1) {
+    console.error('-b only works with a single benchmark file');
+    return process.exit(1);
+}
+
 var benchmarks = {};
 
 (function next () {
@@ -42,11 +47,26 @@ var benchmarks = {};
     ps.stderr.pipe(process.stderr);
     
     var links = [], first = true;
-    ps.stdout.pipe(split()).pipe(through(function (line) {
-        links.push(line.toString().trim());
-        if (first) nextLink();
-        first = false;
-    }));
+    if (argv.b) {
+        ps.stdout.pipe(split()).pipe(through(function (line) {
+            if (!first) return;
+            first = false;
+            var u = url.parse(line.trim());
+            var base = u.protocol + '//' + u.host;
+            
+            links = [].concat(argv.b).map(function (x) {
+                return url.resolve(base, x);
+            });
+            nextLink();
+        }));
+    }
+    else {
+        ps.stdout.pipe(split()).pipe(through(function (line) {
+            links.push(line.toString().trim());
+            if (first) nextLink();
+            first = false;
+        }));
+    }
     
     function nextLink () {
         if (links.length === 0) {
@@ -57,11 +77,12 @@ var benchmarks = {};
         var uri = links.shift();
         var u = url.parse(uri);
         var b = benchmark(uri, argv.t || 10);
+        var sname = name + '  ' + u.path;
         
-        process.stdout.write(sprintf('\r%-24s %3d %%', name + u.path, 0));
+        process.stdout.write(sprintf('\r%-24s %3d %%', sname, 0));
         b.on('percent', function (percent) {
             process.stdout.write(sprintf(
-                '\r%-24s %3d %%', name + u.path, percent
+                '\r%-24s %3d %%', sname, percent
             ));
         });
         
@@ -70,10 +91,7 @@ var benchmarks = {};
         
         b.on('results', function (results) {
             var rps = parseFloat(results['requests per second']);
-            process.stdout.write(sprintf(
-                '\r%-24s %f\x1b[K\r\n',
-                name + u.path, rps
-            ));
+            process.stdout.write(sprintf('\r%-24s %f\x1b[K\r\n', sname, rps));
             
             benchmarks[name] = {
                 'requests per second': rps,
@@ -81,9 +99,7 @@ var benchmarks = {};
             };
         });
         
-        b.on('exit', function () {
-            nextLink();
-        });
+        b.on('exit', nextLink);
     }
 })();
 

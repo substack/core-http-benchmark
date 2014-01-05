@@ -112,12 +112,13 @@ function makeString(size, c) {
 
 server.listen(0, function () {
   var href = 'http://localhost:' + server.address().port;
-  console.log(href + '/bytes/50');
-  console.log(href + '/bytes/500');
-  console.log(href + '/buffer/50');
-  console.log(href + '/buffer/500');
-  console.log(href + '/unicode/50');
-  console.log(href + '/unicode/500');
+  var types = [ 'bytes', 'buffer', 'unicode' ];
+  var bytes = [ 4, 1024, 102400 ];
+  types.forEach(function (t) {
+    bytes.forEach(function (b) {
+      console.log([ href, t, b ].join('/'));
+    });
+  });
   console.log(href + '/fixed');
   console.log(href + '/echo');
 });

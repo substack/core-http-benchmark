@@ -1,4 +1,5 @@
 var http = require(process.argv[2]);
+var cluster = require('cluster');
 
 var fixed = makeString(20 * 1024, 'C'),
     storedBytes = {},
@@ -110,7 +111,9 @@ function makeString(size, c) {
   return s;
 }
 
-server.listen(0, function () {
+module.exports = server;
+server.on('listening', function () {
+  if (!cluster.isMaster) return;
   var href = 'http://localhost:' + server.address().port;
   var types = [ 'bytes', 'buffer', 'unicode' ];
   var bytes = [ 4, 1024, 102400 ];
@@ -125,3 +128,7 @@ server.listen(0, function () {
   console.log(href + '/fixed');
   console.log(href + '/echo');
 });
+
+if (require.main.filename === __filename) {
+  server.listen(0);
+}

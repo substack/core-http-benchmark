@@ -11,8 +11,20 @@ var url = require('url');
 
 var benchmark = require('../');
 
-var argv = minimist(process.argv.slice(2));
+var argv = minimist(process.argv.slice(2), {
+  alias: { c: 'compare' }
+});
 if (argv.h || argv.help) return usage(0);
+
+var compare = {};
+if (argv.c) {
+  var lines = fs.readFileSync(argv.c, 'utf8').split('\n');
+  lines.forEach(function (line) {
+    var parts = line.split(/\s{2,}/);
+    var name = parts[0], p = parts[1], rps = parts[2];
+    compare[name + p] = parseFloat(rps);
+  });
+}
 
 var fancy = argv.fancy !== undefined
   ? argv.fancy
@@ -43,7 +55,8 @@ if (argv.b && files.length > 1) {
 var benchmarks = {};
 
 (function next () {
-  if (files.length === 0) return printSummary();
+  if (files.length === 0) return;
+  
   var file = files.shift();
   var name = path.basename(file).split('.')[0];
   var b = benchmarks[name] = {};
@@ -98,10 +111,28 @@ var benchmarks = {};
     
     b.on('results', function (results) {
       var rps = parseFloat(results['requests per second']);
-      if (fancy) {
-        process.stdout.write(sprintf('\r%-40s %f\x1b[K\r\n', sname, rps));
+      var key = name + u.path;
+      
+      if (fancy && compare[key]) {
+        var cmp = rps > compare[key]
+          ? '\x1b[1m\x1b[32mFASTER\x1b[0m'
+          : '\x1b[1m\x1b[31mSLOWER\x1b[0m'
+        ;
+        process.stdout.write(sprintf(
+          '\r%-40s %8f   vs %8f  (%s)\x1b[K\r\n',
+          sname, rps, compare[key], cmp
+        ));
       }
-      else console.log(sprintf('%-40s %f', sname, rps));
+      else if (fancy) {
+        process.stdout.write(sprintf('\r%-40s %8f\x1b[K\r\n', sname, rps));
+      }
+      else if (compare[key]) {
+        var cmp = rps > compare[key] ? 'FASTER' : 'SLOWER';
+        console.log(sprintf(
+          '%-40s %8f   vs %8f  (%s)', sname, rps, compare[key], cmp
+        ));
+      }
+      else console.log(sprintf('%-40s %8f', sname, rps));
       
       benchmarks[name] = {
         'requests per second': rps,
@@ -112,10 +143,6 @@ var benchmarks = {};
     b.on('exit', nextLink);
   }
 })();
-
-function printSummary () {
-  // todo
-}
 
 function usage (code) {
   var r = fs.createReadStream(__dirname + '/usage.txt');

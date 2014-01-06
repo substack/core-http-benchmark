@@ -35,6 +35,7 @@ var files = argv._;
 if (files.length === 0) {
   files = fs.readdirSync(path.join(__dirname, '..', 'bench'))
     .filter(function (x) { return path.extname(x) === '.js' })
+    .sort()
     .map(function (x) { return path.join(__dirname, '..', 'bench', x) })
   ;
 }
@@ -88,7 +89,7 @@ var benchmarks = {};
   
   function nextLink () {
     if (links.length === 0) {
-      ps.kill();
+      ps.kill('SIGTERM');
       return next();
     }
     

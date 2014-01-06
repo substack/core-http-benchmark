@@ -1,6 +1,6 @@
 {
   "name": "core-http-benchmark",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "benchmark implementations of the http module from node core",
   "main": "index.js",
   "bin": { "core-http-benchmark": "bin/cmd.js" },
